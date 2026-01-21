@@ -1,0 +1,333 @@
+<!doctype html>
+<html lang="zh-TW">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>影片下載器 - yt-dlp</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        min-height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 20px;
+      }
+
+      .container {
+        background: white;
+        border-radius: 15px;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        padding: 40px;
+        max-width: 550px;
+        width: 100%;
+      }
+
+      .header {
+        text-align: center;
+        margin-bottom: 30px;
+      }
+
+      .header h1 {
+        color: #333;
+        font-size: 28px;
+        margin-bottom: 10px;
+      }
+
+      .header p {
+        color: #666;
+        font-size: 14px;
+        margin-bottom: 5px;
+      }
+
+      .badge {
+        display: inline-block;
+        background: #28a745;
+        color: white;
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 12px;
+        margin-top: 10px;
+      }
+
+      .form-group {
+        margin-bottom: 20px;
+      }
+
+      label {
+        display: block;
+        margin-bottom: 8px;
+        color: #333;
+        font-weight: 500;
+      }
+
+      input[type="text"] {
+        width: 100%;
+        padding: 12px;
+        border: 2px solid #e0e0e0;
+        border-radius: 8px;
+        font-size: 14px;
+        transition: border-color 0.3s;
+      }
+
+      input[type="text"]:focus {
+        outline: none;
+        border-color: #667eea;
+      }
+
+      button {
+        width: 100%;
+        padding: 12px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border: none;
+        border-radius: 8px;
+        font-size: 16px;
+        font-weight: 600;
+        cursor: pointer;
+        transition:
+          transform 0.2s,
+          box-shadow 0.2s;
+      }
+
+      button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 20px rgba(102, 126, 234, 0.4);
+      }
+
+      button:active {
+        transform: translateY(0);
+      }
+
+      button:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+      }
+
+      .loading {
+        display: none;
+        text-align: center;
+        margin: 20px 0;
+      }
+
+      .spinner {
+        border: 4px solid #f3f3f3;
+        border-top: 4px solid #667eea;
+        border-radius: 50%;
+        width: 40px;
+        height: 40px;
+        animation: spin 1s linear infinite;
+        margin: 0 auto;
+      }
+
+      @keyframes spin {
+        0% {
+          transform: rotate(0deg);
+        }
+        100% {
+          transform: rotate(360deg);
+        }
+      }
+
+      .message {
+        padding: 15px;
+        border-radius: 8px;
+        margin: 20px 0;
+        display: none;
+      }
+
+      .message.success {
+        background: #d4edda;
+        color: #155724;
+        border: 1px solid #c3e6cb;
+        display: block;
+      }
+
+      .message.error {
+        background: #f8d7da;
+        color: #721c24;
+        border: 1px solid #f5c6cb;
+        display: block;
+      }
+
+      .download-link {
+        display: inline-block;
+        margin-top: 10px;
+        padding: 10px 20px;
+        background: #28a745;
+        color: white;
+        text-decoration: none;
+        border-radius: 6px;
+        font-size: 14px;
+      }
+
+      .download-link:hover {
+        background: #218838;
+      }
+
+      .info {
+        background: #e7f3ff;
+        border-left: 4px solid #2196f3;
+        padding: 12px;
+        margin-top: 20px;
+        border-radius: 4px;
+        font-size: 13px;
+        color: #0c5aa0;
+      }
+
+      .platforms {
+        background: #f8f9fa;
+        padding: 15px;
+        border-radius: 8px;
+        margin-top: 20px;
+      }
+
+      .platforms h3 {
+        font-size: 14px;
+        color: #333;
+        margin-bottom: 10px;
+      }
+
+      .platform-list {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+
+      .platform-tag {
+        background: white;
+        border: 1px solid #ddd;
+        padding: 6px 12px;
+        border-radius: 20px;
+        font-size: 12px;
+        color: #666;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="header">
+        <h1>🎬 影片下載器</h1>
+        <p>使用 Cobalt API - 2026年仍然可用</p>
+        <span class="badge">✓ 穩定可靠</span>
+      </div>
+
+      <form id="downloadForm">
+        <div class="form-group">
+          <label for="url">貼上影片連結</label>
+          <input
+            type="text"
+            id="url"
+            placeholder="https://www.youtube.com/watch?v=..."
+            required
+          />
+        </div>
+
+        <button type="submit" id="submitBtn">開始下載</button>
+      </form>
+
+      <div class="loading" id="loading">
+        <div class="spinner"></div>
+        <p style="margin-top: 10px; color: #666">正在處理中...</p>
+      </div>
+
+      <div class="message" id="message"></div>
+
+      <div class="platforms">
+        <h3>📱 支援的平台</h3>
+        <div class="platform-list">
+          <span class="platform-tag">YouTube</span>
+          <span class="platform-tag">TikTok</span>
+          <span class="platform-tag">Instagram</span>
+          <span class="platform-tag">Twitter/X</span>
+          <span class="platform-tag">Reddit</span>
+          <span class="platform-tag">Pinterest</span>
+          <span class="platform-tag">Vimeo</span>
+          <span class="platform-tag">Bilibili</span>
+        </div>
+      </div>
+
+      <div class="info">
+        ℹ️ 此工具使用 Cobalt API，支援多個平台。<br />
+        ✓ 2026年仍然可用<br />
+        ⚠️ 請尊重著作權，不要下載受保護的內容。
+      </div>
+    </div>
+
+    <script>
+      const form = document.getElementById("downloadForm");
+      const urlInput = document.getElementById("url");
+      const submitBtn = document.getElementById("submitBtn");
+      const loading = document.getElementById("loading");
+      const message = document.getElementById("message");
+
+      form.addEventListener("submit", async (e) => {
+        e.preventDefault();
+
+        const url = urlInput.value.trim();
+        if (!url) {
+          showMessage("請輸入有效的URL", "error");
+          return;
+        }
+
+        submitBtn.disabled = true;
+        loading.style.display = "block";
+        message.style.display = "none";
+
+        try {
+          const response = await fetch("/api/download", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ url }),
+          });
+
+          const data = await response.json();
+
+          if (response.ok && data.success) {
+            showMessage(
+              `✅ 下載準備完成！<br><a href="${data.downloadUrl}" class="download-link" download="${data.filename}">點擊下載</a>`,
+              "success",
+            );
+            urlInput.value = "";
+          } else {
+            showMessage(
+              `❌ ${data.detail || data.error || "下載失敗，請重試"}`,
+              "error",
+            );
+          }
+        } catch (error) {
+          showMessage(`❌ 發生錯誤: ${error.message}`, "error");
+        } finally {
+          submitBtn.disabled = false;
+          loading.style.display = "none";
+        }
+      });
+
+      function showMessage(text, type) {
+        message.innerHTML = text;
+        message.className = `message ${type}`;
+        message.style.display = "block";
+      }
+
+      // 頁面載入時檢查健康狀態
+      window.addEventListener("load", async () => {
+        try {
+          const response = await fetch("/api/health");
+          const data = await response.json();
+          console.log("服務狀態:", data);
+        } catch (error) {
+          console.error("無法連接到服務:", error);
+        }
+      });
+    </script>
+  </body>
+</html>
